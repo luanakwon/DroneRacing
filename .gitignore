@@ -11,4 +11,5 @@ UserSettings/
 *.csproj
 
 # Things to exclude in Assets/
-Assets/TextMesh Pro/
+Assets/"TextMesh Pro"/
+"Assets/TextMesh Pro.meta"
