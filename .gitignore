@@ -1,0 +1,13 @@
+# Anything other than Assets/
+.vscode/
+Builds/
+Library/
+Logs/
+Packages/
+ProjectSettings/
+Temp/
+UserSettings/
+*.sln
+*.csproj
+
+# Things to exclude in Assets/
