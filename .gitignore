@@ -11,3 +11,5 @@ UserSettings/
 *.csproj
 
 # Things to exclude in Assets/
+Assets/Scenes/*.unity
+Assets/TextMesh\ Pro/

@@ -165,22 +165,30 @@ public class FlightCon : MonoBehaviour
     public ControlMode GetFlightMode(int axis){
         return mode[axis];
     }
-    public void SetFlightMode(int axis, ControlMode newMode){
+    public bool SetFlightMode(int axis, ControlMode newMode){
         if (axis == 0){ // roll
             Debug.Log("FlightController.SetFlightMode: axis[roll] only supports mode[raw]");
-        } else if (axis == 1) { // pitch
+            return false;
+        }
+        if (axis == 1) { // pitch
             Debug.Log("FlightController.SetFlightMode: axis[pitch] only supports mode[raw]");
-        } else if (axis == 2 || axis == 3) { // thrust or yaw
-            Debug.Log(xgb_interface);
+            return false;
+        }
+        if (axis == 2 || axis == 3) { // thrust or yaw
             if (xgb_interface.GetSupportedAxes()[axis]){ // when ai assist is supported
                 mode[axis] = newMode;
+                return true;
             } else { // when AI assist is not available
+                bool flag = true;
                 if (newMode != ControlMode.raw){ 
                     Debug.Log("FlightController.SetFlightMode: xgb interface of axis "+axis+" not initialized");
+                    flag = false;
                 }
                 mode[axis] = ControlMode.raw;
+                return flag;
             }
         }
+        return false;
     }
     public void ResetState()
     {

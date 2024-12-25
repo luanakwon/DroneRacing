@@ -43,27 +43,33 @@ public class ConfigButton : MonoBehaviour
 
     public void Next(){
         if (mode < ControlMode.assist){
-            mode ++;
-            Configure();
-            if (keyList != null) {inst_UI.Show(keyList[(int)mode]);}
-        }
+            bool ret = Configure(mode+1);
+            if (ret){
+                mode ++;
+                if (keyList != null) {inst_UI.Show(keyList[(int)mode]);}
+            }
+        }            
     }
     public void Prev(){
         if (mode > ControlMode.raw){
-            mode --;
-            Configure();
-            if (keyList != null) {inst_UI.Show(keyList[(int)mode]);}
+            bool ret = Configure(mode-1);
+            if (ret){
+                mode --;
+                if (keyList != null) {inst_UI.Show(keyList[(int)mode]);}
+            }            
         }
     }
 
-    private void Configure(){
-        UI_text.text = mode.ToString();
+    private bool Configure(ControlMode mode){
         // set the flightmode of the drone at this scene
-        drone.SetFlightMode(axis,mode);
-        // get configs from matching mode
-        float[] values = configHandler.GetConfig(mode,param_names);
-        // set the configs of the drone at this scene
-        // dont set the thrust in this scene
-        drone.SetConfig(param_names, values);
+        bool ret = drone.SetFlightMode(axis,mode);
+        if (ret) {
+            UI_text.text = mode.ToString();
+            // get configs from matching mode
+            float[] values = configHandler.GetConfig(mode,param_names);
+            // set the configs of the drone at this scene
+            drone.SetConfig(param_names, values);
+        }
+        return ret;
     }
 }

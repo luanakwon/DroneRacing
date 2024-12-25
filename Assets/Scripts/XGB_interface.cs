@@ -1,3 +1,4 @@
+using System.IO;
 using UnityEngine;
 
 public class XGB_interface
@@ -20,13 +21,21 @@ public class XGB_interface
         // init model
         if (throttle_model_json != null){
             string jspath = System.IO.Path.Combine(Application.streamingAssetsPath,"XGB_models",throttle_model_json);
-            string jstr = System.IO.File.ReadAllText(jspath);
-            model_th = JsonUtility.FromJson<MyXGB>(jstr);
+            try{
+                string jstr = System.IO.File.ReadAllText(jspath);
+                model_th = JsonUtility.FromJson<MyXGB>(jstr);
+            } catch (FileNotFoundException) {
+                model_th = null;
+            }
         }
         if (yaw_model_json != null){
             string jspath = System.IO.Path.Combine(Application.streamingAssetsPath,"XGB_models",yaw_model_json);
-            string jstr = System.IO.File.ReadAllText(jspath);
-            model_y = JsonUtility.FromJson<MyXGB>(jstr);
+            try {
+                string jstr = System.IO.File.ReadAllText(jspath);
+                model_y = JsonUtility.FromJson<MyXGB>(jstr);
+            } catch (FileNotFoundException) {
+                model_y = null;
+            }
         }        
     }
 
