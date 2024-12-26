@@ -13,3 +13,7 @@ UserSettings/
 # Things to exclude in Assets/
 Assets/Scenes/*.unity
 Assets/TextMesh\ Pro/
+
+# Temporary
+Assets/Scripts/StreamingAssetLoader.cs
+Assets/Scripts/StreamingAssetLoader.cs.meta

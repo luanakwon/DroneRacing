@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using TMPro;
 using UnityEngine;
 
@@ -11,13 +12,25 @@ public class ConfigHandler : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
+        Debug.Log(Application.streamingAssetsPath);
+        Debug.Log(Application.persistentDataPath);
+
         // load config
-        string jspath = System.IO.Path.Combine(Application.streamingAssetsPath,"FlightConfigs","config_raw.json");
-        string jstr = System.IO.File.ReadAllText(jspath);
-        raw_mode_config.LoadFromJson(jstr);
-        jspath = System.IO.Path.Combine(Application.streamingAssetsPath,"FlightConfigs","config_assisted.json");
-        jstr = System.IO.File.ReadAllText(jspath);
-        assist_mode_config.LoadFromJson(jstr);
+        try{
+            string jspath = Path.Combine(Application.persistentDataPath,"FlightConfigs","config_raw.json");
+            string jstr = File.ReadAllText(jspath);
+            raw_mode_config.LoadFromJson(jstr);
+        } catch (IOException) {
+            Debug.LogWarning("No previous user configuration found.");
+        }
+
+        try{
+            string jspath = Path.Combine(Application.persistentDataPath,"FlightConfigs","config_assisted.json");
+            string jstr = File.ReadAllText(jspath);
+            assist_mode_config.LoadFromJson(jstr);
+        } catch (IOException) {
+            Debug.LogWarning("No previous user configuration found.");
+        }
     }
     void Start(){
     }
@@ -77,13 +90,14 @@ public class ConfigHandler : MonoBehaviour
             drone.SetConfig(property, value);
         }
     }
+    // TODO : if exist-overwrite, if not-create, if no dir-create
     public void SaveConfig(){
-        System.IO.File.WriteAllText(
-            System.IO.Path.Combine(Application.streamingAssetsPath,"FlightConfigs","config_raw.json"),
+        File.WriteAllText(
+            Path.Combine(Application.persistentDataPath,"FlightConfigs","config_raw.json"),
             raw_mode_config.ToJson()
         );
-        System.IO.File.WriteAllText(
-            System.IO.Path.Combine(Application.streamingAssetsPath,"FlightConfigs","config_assisted.json"),
+        File.WriteAllText(
+            Path.Combine(Application.persistentDataPath,"FlightConfigs","config_assisted.json"),
             assist_mode_config.ToJson()
         );
         drone.SaveConfig();
@@ -93,11 +107,11 @@ public class ConfigHandler : MonoBehaviour
 public enum ControlMode {raw=0, semi_assist=1, assist=2}
 
 [Serializable] public class Config {
-    private float _thrust_max;
+    private float _thrust_max=3;
     private float _roll_cs, _roll_max=1000, _roll_exp;
     private float _pitch_cs, _pitch_max=1000, _pitch_exp;
     private float _yaw_cs, _yaw_max=1000, _yaw_exp;
-    private float _cam_fov, _cam_ang;
+    private float _cam_fov=90, _cam_ang=15;
 
     public float thrust_max{
         get {return _thrust_max;}
@@ -161,7 +175,7 @@ public enum ControlMode {raw=0, semi_assist=1, assist=2}
         get {return _cam_ang;}
         set {_cam_ang = Mathf.Clamp(value, 0,90);}
     }
-    public string mode;
+    public string mode = "0000";
 
     public string ToJson(){
         string txt = "{\"thrust_max\":"+_thrust_max;

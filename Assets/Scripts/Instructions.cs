@@ -5,15 +5,16 @@ using UnityEngine;
 public class Instructions : MonoBehaviour
 {
     public TMP_Text UI;
+    [SerializeField] TextAsset instruction_json;
 
     private Dictionary<string,string> instructionSet = new Dictionary<string, string>();
 
     void Awake(){
-        string jspath = System.IO.Path.Combine(
-            Application.streamingAssetsPath,"Instruction","instruction.json");
-        string jstr = System.IO.File.ReadAllText(jspath);
-        // Debug.Log(jstr);
-        LoadInstructions(jstr);
+        // string jspath = System.IO.Path.Combine(
+        //     Application.persistentDataPath,"Instruction","instruction.json");
+        // string jstr = System.IO.File.ReadAllText(jspath);
+        // // Debug.Log(jstr);
+        LoadInstructions(instruction_json.text);
     }
 
     private void LoadInstructions(string jstr){        
