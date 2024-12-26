@@ -1,42 +1,32 @@
 using System.IO;
 using UnityEngine;
 
-public class XGB_interface
+public class XGB_interface : MonoBehaviour
 {
+    [SerializeField] TextAsset throttle_model_json;
+    [SerializeField] TextAsset yaw_mode_json;
+    [SerializeField] private int t_max;
     private float[,] signals;
-    private int t_max;
     private MyXGB model_th = null;
     private MyXGB model_y = null;
-    public XGB_interface(int t_window, string throttle_model_json=null, string yaw_model_json=null){
-        t_max = t_window;
-        signals = new float[1,t_window*4+2];
-        for (int t=0;t<t_window;t++){
+
+    public void InitInterface(bool enable_throttle, bool enable_yaw){
+        signals = new float[1,t_max*4+2];
+        for (int t=0;t<t_max;t++){
             signals[0,t] = 1500; // roll
             signals[0,t+5] = 1500; // pitch
             signals[0,t+10] = 1000; // throttle
             signals[0,t+15] = 1500; // yaw
         }
-        signals[0,t_window*4] = 1500; // attitude roll
-        signals[0,t_window*4+1] = 1500; // attitude pitch
-        // init model
-        if (throttle_model_json != null){
-            string jspath = System.IO.Path.Combine(Application.streamingAssetsPath,"XGB_models",throttle_model_json);
-            try{
-                string jstr = System.IO.File.ReadAllText(jspath);
-                model_th = JsonUtility.FromJson<MyXGB>(jstr);
-            } catch (FileNotFoundException) {
-                model_th = null;
-            }
-        }
-        if (yaw_model_json != null){
-            string jspath = System.IO.Path.Combine(Application.streamingAssetsPath,"XGB_models",yaw_model_json);
-            try {
-                string jstr = System.IO.File.ReadAllText(jspath);
-                model_y = JsonUtility.FromJson<MyXGB>(jstr);
-            } catch (FileNotFoundException) {
-                model_y = null;
-            }
-        }        
+        signals[0,t_max*4] = 1500; // attitude roll
+        signals[0,t_max*4+1] = 1500; // attitude pitch
+
+        if (enable_throttle){
+            model_th = JsonUtility.FromJson<MyXGB>(throttle_model_json.text);
+        } else {model_th = null;}
+        if (enable_yaw){
+            model_y = JsonUtility.FromJson<MyXGB>(yaw_mode_json.text);
+        } else {model_y = null;}
     }
 
     public bool[] GetSupportedAxes(){

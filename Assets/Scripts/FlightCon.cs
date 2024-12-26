@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using UnityEditor.Analytics;
 using UnityEngine;
 
 public class FlightCon : MonoBehaviour
@@ -15,7 +17,7 @@ public class FlightCon : MonoBehaviour
     [HideInInspector] public Vector2 left_joystick {get; private set;}
     [HideInInspector] public Vector2 right_joystick {get; private set;}
 
-    private Config flightConfig;
+    private Config flightConfig = new();
     private float[] signals = {1500,1500,1000,1500,1500,1500};
     // signals (roll pitch thrust yaw)
     private float[] signals0 = {1500,1500,1000,1500};
@@ -31,16 +33,17 @@ public class FlightCon : MonoBehaviour
 
     private XGB_interface xgb_interface;
     private ControlMode[] mode;
-    private string yaw_model_path = "model_yaw_reduced.json";
-    private string thrust_model_path = "model_thrust_reduced.json";
 
     void Awake(){
         // read in flight config
-        string jspath = System.IO.Path.Combine(
-            Application.streamingAssetsPath,"FlightConfigs","config_current.json");
-        string jstr = System.IO.File.ReadAllText(jspath);
-        flightConfig = new Config();
-        flightConfig.LoadFromJson(jstr);
+        try{
+            string jspath = System.IO.Path.Combine(
+                Application.persistentDataPath,"FlightConfigs","config_current.json");
+            string jstr = System.IO.File.ReadAllText(jspath);
+            flightConfig.LoadFromJson(jstr);
+        } catch (IOException) {
+            Debug.LogWarning("No previous user configuration found.");
+        }
 
         // set current flight mode
         mode = new ControlMode[4];
@@ -54,24 +57,9 @@ public class FlightCon : MonoBehaviour
             }
         }
 
-        // init XGB
-        // (idealy we dont want to init the not-used xgb
-        // but the ControlModes can change in the ConfigScene
-        // so we just decide this in the inspector)
-
-        if (throttle_xgb_mode != ControlMode.raw && yaw_xgb_mode != ControlMode.raw){
-            xgb_interface = new XGB_interface(
-                5,thrust_model_path,yaw_model_path
-            );
-        } else {
-            if (throttle_xgb_mode != ControlMode.raw){
-                xgb_interface = new XGB_interface(5,thrust_model_path);
-            } else if (yaw_xgb_mode != ControlMode.raw){
-                xgb_interface = new XGB_interface(5,null,yaw_model_path);
-            } else {
-                xgb_interface = null;
-            }
-        }
+        xgb_interface = gameObject.GetComponent<XGB_interface>();
+        xgb_interface.InitInterface(
+            throttle_xgb_mode!=ControlMode.raw, yaw_xgb_mode != ControlMode.raw);
     }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -151,14 +139,14 @@ public class FlightCon : MonoBehaviour
         // Debug.Log(property + " " + value);
         property?.SetValue(flightConfig,value);
     }
-    public void SaveConfig(){
+    public void SaveConfig(){// TODO : if exist-overwrite, if not-create, if no dir-create
         string mode_str = "";
         for (int i=0;i<4;i++){
             mode_str += ((int)mode[i]).ToString();
         }
         flightConfig.mode = mode_str;
         System.IO.File.WriteAllText(
-            System.IO.Path.Combine(Application.streamingAssetsPath,"FlightConfigs","config_current.json"),
+            System.IO.Path.Combine(Application.persistentDataPath,"FlightConfigs","config_current.json"),
             flightConfig.ToJson()
         );
     }
