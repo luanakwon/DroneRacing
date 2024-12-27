@@ -1,14 +1,10 @@
 using System;
 using System.IO;
-using UnityEditor.Analytics;
 using UnityEngine;
 
 public class FlightCon : MonoBehaviour
 {
     public bool thrust_switch;
-    public float pitchRate;
-    public float yawRate;
-    public float rollRate;
     
     public GameObject FPV_cam;
     public ControlMode throttle_xgb_mode;
@@ -36,14 +32,7 @@ public class FlightCon : MonoBehaviour
 
     void Awake(){
         // read in flight config
-        try{
-            string jspath = System.IO.Path.Combine(
-                Application.persistentDataPath,"FlightConfigs","config_current.json");
-            string jstr = System.IO.File.ReadAllText(jspath);
-            flightConfig.LoadFromJson(jstr);
-        } catch (IOException) {
-            Debug.LogWarning("No previous user configuration found.");
-        }
+        flightConfig.LoadFromPlayerPref("cur_cfg");
 
         // set current flight mode
         mode = new ControlMode[4];
@@ -139,16 +128,14 @@ public class FlightCon : MonoBehaviour
         // Debug.Log(property + " " + value);
         property?.SetValue(flightConfig,value);
     }
-    public void SaveConfig(){// TODO : if exist-overwrite, if not-create, if no dir-create
+    public void SaveConfig(){
         string mode_str = "";
         for (int i=0;i<4;i++){
             mode_str += ((int)mode[i]).ToString();
         }
         flightConfig.mode = mode_str;
-        System.IO.File.WriteAllText(
-            System.IO.Path.Combine(Application.persistentDataPath,"FlightConfigs","config_current.json"),
-            flightConfig.ToJson()
-        );
+
+        flightConfig.ToPlayerPref("cur_cfg");
     }
     public ControlMode GetFlightMode(int axis){
         return mode[axis];
